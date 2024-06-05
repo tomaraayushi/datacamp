@@ -1,0 +1,86 @@
+# Working with Time Series in Pandas
+
+# First Time Series
+# Create the range of dates here
+seven_days = pd.date_range(start ='2017-1-1', periods = 7)
+
+# Iterate over the dates and print the number and name of the weekday
+for day in seven_days:
+    print(f"Day of week:{day.dayofweek},Name of day:{day.day_name()}")
+
+# create time series by changing data type correctly
+data = pd.read_csv('nyc.csv')
+
+# Inspect data
+print(data.info())
+
+# Convert the date column to datetime64
+data['date'] = pd.to_datetime(data['date'])
+
+# Set date column as index
+data.set_index('date', inplace = True)
+
+# Inspect data 
+print(data.info())
+
+# Plot data
+data.plot(subplots = True)
+plt.show()
+
+# Compare annual stock prices
+# Create dataframe prices here
+prices = pd.DataFrame()
+
+# Select data for each year and concatenate with prices here 
+for year in ['2013', '2014', '2015']:
+    price_per_year = yahoo.loc[year, ['price']].reset_index(drop=True)
+    price_per_year.rename(columns={'price' : year}, inplace=True)
+    prices = pd.concat([prices, price_per_year], axis=1)
+
+# Plot prices
+prices.plot()
+plt.show()
+
+# Shifting Stock prices across time
+# Import data here
+google = pd.read_csv('google.csv', parse_dates= ['Date'], index_col = 'Date')
+# Set data frequency to business daily
+google = google.asfreq('B')
+
+# Create 'lagged' and 'shifted'
+google['lagged'] = google['Close'].shift(periods = -90)
+google['shifted'] = google['Close'].shift(periods = 90)
+
+# Plot the google price series
+google.plot()
+plt.show()
+
+# Calculating Stock Price Changes
+# Created shifted_30 here
+yahoo['shifted_30'] = yahoo['price'].shift(periods = 30)
+
+# Subtract shifted_30 from price
+yahoo['change_30'] = yahoo['price'] - yahoo['shifted_30']
+
+# Get the 30-day price difference
+yahoo['diff_30'] = yahoo['price'].diff(periods = 30)
+
+# Inspect the last five rows of price
+print(yahoo.tail(5))
+
+# Show the value_counts of the difference between change_30 and diff_30
+print(yahoo['change_30'].sub(yahoo['diff_30']).value_counts())
+
+# Plotting multi period return
+# Create daily_return
+google['daily_return'] = google['Close'].pct_change(1).mul(100)
+
+# Create monthly_return
+google['monthly_return'] = google['Close'].pct_change(30).mul(100)
+
+# Create annual_return
+google['annual_return'] = google['Close'].pct_change(360).mul(100)
+
+# Plot the result
+google.plot(subplots = True)
+plt.show()
